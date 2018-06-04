@@ -13,7 +13,7 @@ import com.hsbc.enums.Status;
  * @author Ayush Verma
  */
 public class ATMMachineTest {
-	private static ATMMachine atm = new ATMMachine();
+	private static ATMMachine atm = ATMMachine.getInstance();
 	private int balance = 100;
 
 	@Test

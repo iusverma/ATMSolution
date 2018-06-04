@@ -8,12 +8,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hsbc.atm.model.Request;
 import com.hsbc.atm.model.Response;
-import com.hsbc.atm.model.WithdrawResponse;
 
 /**
  * ATMController
- * @author ayverma
- * All request for the app will land here and
+ * @author Ayush Verma
+ * All request for the application will land here and
  * then dispatched to corresponding path
  */
 @RestController
@@ -23,6 +22,10 @@ public class ATMController {
 	private static final Logger LOGGER = Logger.getLogger(ATMController.class);
 
 	/**
+	 * ATMHandler for all operations */
+	private ATMHandler atmHandler = new ATMHandler();
+
+	/**
 	 * Withdraw Request
 	 * all withdrawal request comes here,
 	 * responds with the status and balance
@@ -30,6 +33,17 @@ public class ATMController {
 	@RequestMapping(value="/amount", method=RequestMethod.POST)
 	public Response withdrawAmount(@RequestBody Request request) {
 		LOGGER.debug("withdrawAmount - begins");
-		return new WithdrawResponse();
+		return atmHandler.withdrawAmount(request.getAmount());
+	}
+
+	/**
+	 * Withdraw Request
+	 * all withdrawal request comes here,
+	 * responds with the status and balance
+	 */
+	@RequestMapping(value="/balance", method=RequestMethod.GET)
+	public Response withdrawAmount() {
+		LOGGER.debug("withdrawAmount - begins");
+		return atmHandler.getBalance();
 	}
 }

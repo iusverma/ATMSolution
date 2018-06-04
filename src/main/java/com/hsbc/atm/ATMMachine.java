@@ -11,12 +11,24 @@ import com.hsbc.enums.Status;
  * ATM machine class, responsible for keeping track of balances and notes.
  */
 public class ATMMachine {
+	/** static instance for ATMMachine object
+	 */
+	private static ATMMachine atmMachine = new ATMMachine();
+
 	/** Remaining balance in ATM */
 	private int balance;
 
 	/** Map of each type of notes in ATM */
 	private Map<String, Integer> currencyToNotesMap = new HashMap<>();
 
+	/** private constructor, object cannot be created outside */
+	private ATMMachine() {};
+
+	/**
+	 * Static getInstance method */
+	public static ATMMachine getInstance() {
+		return atmMachine;
+	}
 	/**
 	 * Getter for balance
 	 */
