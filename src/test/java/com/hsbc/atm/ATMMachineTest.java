@@ -14,7 +14,7 @@ import com.hsbc.enums.Status;
  */
 public class ATMMachineTest {
 	private static ATMMachine atm = ATMMachine.getInstance();
-	private int balance = 100;
+	private int balance = atm.getBalance();
 
 	@Test
 	public void getBalance() {
@@ -24,7 +24,7 @@ public class ATMMachineTest {
 
 	@Test
 	public void getCurrencyToNotesMap() {
-		Assert.assertTrue(atm.getCurrencyToNotesMap().isEmpty());
+		Assert.assertFalse(atm.getCurrencyToNotesMap().isEmpty());
 	}
 
 	@Test

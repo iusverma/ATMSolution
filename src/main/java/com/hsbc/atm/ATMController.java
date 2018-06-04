@@ -42,8 +42,13 @@ public class ATMController {
 	 * responds with the status and balance
 	 */
 	@RequestMapping(value="/balance", method=RequestMethod.GET)
-	public Response withdrawAmount() {
+	public Response getBalance() {
+		/**This should return status of each kind of notes */
 		LOGGER.debug("withdrawAmount - begins");
 		return atmHandler.getBalance();
 	}
+
+	/**
+	 * API to add and reset amounts
+	 */
 }

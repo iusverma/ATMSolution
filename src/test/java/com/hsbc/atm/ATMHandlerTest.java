@@ -21,17 +21,17 @@ public class ATMHandlerTest {
 		Assert.assertEquals(response.getStatus(), Status.SUCCESS);
 		Assert.assertEquals(response.getMessage(),SUCCESS_RESPONSE);
 		Assert.assertEquals(response.getAmountRequested(), 20);
-		Assert.assertEquals(response.getBalance(), 0); //TODO: To be modified later
+		Assert.assertEquals(response.getBalance(), 1800); //TODO: To be modified later
 	}
 
 	@Test
-	public void testATMBalancel() {
+	public void testATMBalance() {
 		ATMHandler atmHandler = new ATMHandler();
 		Response response = atmHandler.getBalance();
 		Assert.assertEquals(response.getStatus(), Status.SUCCESS);
 		Assert.assertEquals(response.getMessage(),SUCCESS_RESPONSE);
 		Assert.assertEquals(response.getAmountRequested(), 0);
-		Assert.assertEquals(response.getBalance(), 0); //TODO: To be modified later
+		Assert.assertEquals(response.getBalance(), 1800); //TODO: To be modified later
 	}
 
 	@Test
