@@ -23,7 +23,9 @@ public class ResponseMessage {
 	
 	/** Invalid Response Messages */
 	private static final String INVALID_DEPOSIT_RESPONSE = "Invalid bills for deposit, please check the amount & bill before deposit.";
+	private static final String INVALID_WITHDRAWAL_RESPONSE = "Invalid amount for withdrawal, please enter the amount in multiple of 10.";
 	public static final String INVALID_DEPOSIT = "INVALID_DEPOSIT";
+	public static final String INVALID_WITHDRAWAL = "INVALID_WITHDRAWAL";
 
 	/** Map for string messages */
 	private static Map<String, String> responseMessages = new HashMap<>();
@@ -37,6 +39,7 @@ public class ResponseMessage {
 		responseMessages.put(SUCCESS_ENQUIRY, SUCCESS_ENQUIRY_RESPONSE);
 		responseMessages.put(FAILED_WITHDRAWAL, FAILED_WITHDRAWAL_RESPONSE);
 		responseMessages.put(INVALID_DEPOSIT, INVALID_DEPOSIT_RESPONSE);
+		responseMessages.put(INVALID_WITHDRAWAL, INVALID_WITHDRAWAL_RESPONSE);
 	}
 
 	/**

@@ -12,6 +12,9 @@ This API is built using
 1. Go in ATMSolution director
 2. Run java -jar target/ATMSolution-0.0.1-SNAPSHOT.jar, this will start the server
 
+OR
+1. Type ./start.sh on command/shell/terminal.
+:
 ### API Documentation
 
 Use Case | Http Method | API |

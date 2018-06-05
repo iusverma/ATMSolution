@@ -47,14 +47,19 @@ public class ATMHandlerTest {
 	public void testUpdateBalance() {
 		ATMHandler atmHandler = new ATMHandler();
 		Response initialBalance = atmHandler.getBalance();
-		DepositRequest request = prepareDepositRequest();
+		DepositRequest request = new DepositRequest();
+		request.setAmount(200);
+		Map<Integer,Integer> notesToDeposit = new HashMap<Integer, Integer>();
+		notesToDeposit.put(10,4);
+		notesToDeposit.put(20,3);
+		notesToDeposit.put(50,2);
+		request.setNotesToDeposit(notesToDeposit);
 
 		int expectedBalance = initialBalance.getAmount()+request.getAmount();
 		Map<Integer,Integer> initialBills = initialBalance.getBillsDetail().getBillsDetail();
 		int expectedTenDollarNotes = initialBills.get(TEN_DOLLAR_KEY) + request.getNotesToDeposit().get(TEN_DOLLAR_KEY);
 		int expectedTwentyDollarNotes = initialBills.get(TWENTY_DOLLAR_KEY) + request.getNotesToDeposit().get(TWENTY_DOLLAR_KEY);
 		int expectedFiftyDollarNotes = initialBills.get(FIFTY_DOLLAR_KEY) + request.getNotesToDeposit().get(FIFTY_DOLLAR_KEY);
-		//int expectedHundredDollarNotes = initialBalance.getStackDetails().get(HUNDRED_DOLLAR_KEY) + request.getNotesToDeposit().get(HUNDRED_DOLLAR_KEY);
 
 		atmHandler.updateBalance(request);
 		Response updatedBalance = atmHandler.getBalance();
@@ -63,17 +68,39 @@ public class ATMHandlerTest {
 		Assert.assertEquals((int)updatedBills.get(TEN_DOLLAR_KEY), expectedTenDollarNotes);
 		Assert.assertEquals((int)updatedBills.get(TWENTY_DOLLAR_KEY), expectedTwentyDollarNotes);
 		Assert.assertEquals((int)updatedBills.get(FIFTY_DOLLAR_KEY), expectedFiftyDollarNotes);
-		//Assert.assertEquals((int)updatedBalance.getStackDetails().get(HUNDRED_DOLLAR_KEY), expectedHundredDollarNotes);
 	}
 
-	private DepositRequest prepareDepositRequest() {
+	@Test
+	public void testUpdateInvalidDeposit() {
+		ATMHandler atmHandler = new ATMHandler();
+		int balance = atmHandler.getBalance().getAmount();
 		DepositRequest request = new DepositRequest();
 		request.setAmount(200);
 		Map<Integer,Integer> notesToDeposit = new HashMap<Integer, Integer>();
-		notesToDeposit.put(10,4);
+		notesToDeposit.put(10,2);
 		notesToDeposit.put(20,3);
-		notesToDeposit.put(50,2);
+		notesToDeposit.put(50,1);
+		notesToDeposit.put(100,1);
 		request.setNotesToDeposit(notesToDeposit);
-		return request;
+
+		Response response = atmHandler.updateBalance(request);
+		Assert.assertNotNull(response);
+		Assert.assertEquals(response.getStatus(),Status.INVALID);
+		Assert.assertEquals(response.getMessage(),ResponseMessage.getResponseMessage(ResponseMessage.INVALID_DEPOSIT));
+		Assert.assertEquals(response.getAmount(),0);
+		Assert.assertEquals(atmHandler.getBalance().getAmount(),balance);
+	}
+
+	@Test
+	public void testUpdateInvalidWithdrawal() {
+		int withdrawalAmount = 275;
+		ATMHandler atmHandler = new ATMHandler();
+		int balance = atmHandler.getBalance().getAmount();
+		Response response = atmHandler.withdrawAmount(withdrawalAmount);
+		Assert.assertNotNull(response);
+		Assert.assertEquals(response.getStatus(),Status.INVALID);
+		Assert.assertEquals(response.getMessage(),ResponseMessage.getResponseMessage(ResponseMessage.INVALID_WITHDRAWAL));
+		Assert.assertEquals(response.getAmount(),withdrawalAmount);
+		Assert.assertEquals(atmHandler.getBalance().getAmount(),balance);
 	}
 }

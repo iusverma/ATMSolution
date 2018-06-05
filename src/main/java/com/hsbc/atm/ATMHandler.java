@@ -22,6 +22,12 @@ public class ATMHandler {
 	 */
 	public Response withdrawAmount(int amount) {
 		Status status = Status.FAILED;
+		if(!isAmountValid(amount)) {
+			status = Status.INVALID;
+			Response response = ResponseFactory.getResponseFromStatus(status,OperationType.WITHDRAWAL);
+			response.setAmount(amount);
+			return response;
+		}
 		if(atmMachine.isAmountAvailable(amount)) {
 			status = atmMachine.withdrawAmount(amount);
 		}else {
@@ -50,7 +56,6 @@ public class ATMHandler {
 	public Response updateBalance(DepositRequest request) {
 		Status status = Status.INVALID;
 		if(request==null || !isRequestValid(request)) {
-			status = atmMachine.depositAmount(request);
 			Response response = ResponseFactory.getResponseFromStatus(status, OperationType.DEPOSIT);
 			return response;
 		}
@@ -67,6 +72,16 @@ public class ATMHandler {
 	 */
 	private boolean isRequestValid(DepositRequest request) {
 		if(request.getAmount() ==  MapUtils.sumOfMapElements(request.getNotesToDeposit()))
+			return true;
+		return false;
+	}
+
+	/**
+	 * Validates withdrawal amount
+	 * Return true if amount is multiple of 10
+	 */
+	private boolean isAmountValid(int amount) {
+		if(amount%10==0)
 			return true;
 		return false;
 	}
