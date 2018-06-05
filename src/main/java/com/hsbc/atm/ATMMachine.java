@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -27,7 +28,10 @@ public class ATMMachine {
 	private int balance;
 
 	/** Map of each type of notes in ATM */
-	private Map<String, Integer> currencyToNotesMap = new HashMap<>();
+	private Map<Integer, Integer> currencyToNotesMap = new HashMap<>();
+
+	/** Stores information of number of notes to dispense */
+	private Map<Integer, Integer> currentTransactionHoldings = new HashMap<>();
 
 	/** private constructor, object cannot be created outside */
 	private ATMMachine() {
@@ -39,10 +43,10 @@ public class ATMMachine {
 	 */
 	private void initializeMap() {
 		LOGGER.info("Initializing ATM balance.");
-		currencyToNotesMap.put(StringConstants.TEN_DOLLAR_NOTE,10);
-		currencyToNotesMap.put(StringConstants.TWENTRY_DOLLAR_NOTE,10);
-		currencyToNotesMap.put(StringConstants.FIFTY_DOLLAR_NOTE,10);
-		currencyToNotesMap.put(StringConstants.HUNDRED_DOLLAR_NOTE,10);
+		currencyToNotesMap.put(10,10);
+		currencyToNotesMap.put(20,10);
+		currencyToNotesMap.put(50,10);
+		currencyToNotesMap.put(100,10);
 		LOGGER.info("ATM Balance ==> "+this.getBalance());
 	}
 
@@ -60,7 +64,7 @@ public class ATMMachine {
 	/**
 	 * Getter for currencyToNotesMap
 	 */
-	public Map<String, Integer> getCurrencyToNotesMap() {
+	public Map<Integer, Integer> getCurrencyToNotesMap() {
 		return currencyToNotesMap;
 	}
 	/**
@@ -72,22 +76,60 @@ public class ATMMachine {
 	/**
 	 * Setter for currencyToNotesMap
 	 */
-	public void setCurrencyToNotesMap(Map<String, Integer> currencyToNotesMap) {
+	public void setCurrencyToNotesMap(Map<Integer, Integer> currencyToNotesMap) {
 		this.currencyToNotesMap = currencyToNotesMap;
 	}
 
 	/**
-	 * Reduces the amount in currencyToNotesMap 
-	 * @return
+	 * Reduces the amount in currencyToNotesMap
 	 */
 	public Status withdrawAmount(int amount) {
+		Set<Integer> keySet = currencyToNotesMap.keySet();
+		Iterator<Integer> iter = keySet.iterator();
+		while(iter.hasNext()) {
+			Integer key = iter.next();
+			amount = populateAmntForDispensing(amount, key);
+		}
+		if(amount>0){
+			LOGGER.info("!!! Amount can not dispensed due to lack of notes!!!");
+			return Status.INVALID;
+        }else{
+            for (Entry<Integer, Integer> entry : currentTransactionHoldings.entrySet()) {
+                LOGGER.info(entry.getKey() + "$ bills: " + entry.getValue());
+                // Now reduce the same number from currency store
+                currencyToNotesMap.put(entry.getKey(),currencyToNotesMap.get(entry.getKey()) - entry.getValue());
+                // TODO: prepare response with notes details
+            }
+        }
+		currentTransactionHoldings.clear();
 		return Status.SUCCESS;
 	}
 
 	/**
+	 * This method evaluates exact number of individual
+	 * notes for possible denomination
+	 */
+	private int populateAmntForDispensing(int amount, int factor){
+        int bills = 0;
+        bills = amount / factor;
+        int availableBills = currencyToNotesMap.get(factor);
+        if( bills > availableBills){
+            // When number of required bills is greater than available bills
+            currentTransactionHoldings.put(factor, availableBills);
+            amount = amount - (factor * availableBills);
+            currencyToNotesMap.put(factor, 0);
+        }else{
+            // When ATM have sufficient bills
+            currentTransactionHoldings.put(factor, bills);
+            amount = amount % factor;
+            //currencyToNotesMap.put(factor, availableBills - bills);
+        }
+        return amount;
+    }
+
+	/**
 	 * Reverts the withdrawal or restores recurrencyToNotesMap
 	 * to beginning of the transaction
-	 * @return
 	 */
 	public Status revertTransaction() {
 		return Status.SUCCESS;
@@ -96,33 +138,25 @@ public class ATMMachine {
 	/**
 	 * Primarily responsible for evaluating
 	 * availability of funds.
-	 * @return
 	 */
 	public boolean isAmountAvailable(int amount) {
-		return true;
+		if(amount<calculateBalance())
+			return true;
+		return false;
 	}
 
 	/**
 	 * Calculates the balance based on number
 	 * of notes remaining in map
-	 * @return
 	 */
 	private int calculateBalance() {
 		int balance = 0;
-		Set<String> keySet = currencyToNotesMap.keySet();
-		Iterator<String> iter = keySet.iterator();
+		Set<Integer> keySet = currencyToNotesMap.keySet();
+		Iterator<Integer> iter = keySet.iterator();
 		while(iter.hasNext()) {
-			String key = iter.next();
+			Integer key = iter.next();
 			int value = currencyToNotesMap.get(key);
-			if(key.equals(StringConstants.TEN_DOLLAR_NOTE)) {
-				balance += value*10;
-			}else if(key.equals(StringConstants.TWENTRY_DOLLAR_NOTE)) {
-				balance += value*20;
-			}else if(key.equals(StringConstants.FIFTY_DOLLAR_NOTE)) {
-				balance += value*50;
-			}else if(key.equals(StringConstants.HUNDRED_DOLLAR_NOTE)) {
-				balance += value*100;
-			}
+			balance += value*key;
 		}
 		return balance;
 	}
