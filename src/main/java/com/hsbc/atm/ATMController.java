@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hsbc.atm.model.DepositRequest;
 import com.hsbc.atm.model.Request;
 import com.hsbc.atm.model.Response;
 
@@ -30,7 +31,7 @@ public class ATMController {
 	 * all withdrawal request comes here,
 	 * responds with the status and balance
 	 */
-	@RequestMapping(value="/amount", method=RequestMethod.POST)
+	@RequestMapping(value="/withdraw", method=RequestMethod.POST)
 	public Response withdrawAmount(@RequestBody Request request) {
 		LOGGER.debug("withdrawAmount - begins");
 		return atmHandler.withdrawAmount(request.getAmount());
@@ -49,6 +50,13 @@ public class ATMController {
 	}
 
 	/**
-	 * API to add and reset amounts
+	 * Deposit Request
+	 * Some amount is deposited at the ATM
 	 */
+	@RequestMapping(value="/deposit", method=RequestMethod.PUT)
+	public Response updateBalance(@RequestBody DepositRequest request) {
+		/**This should return status of each kind of notes */
+		LOGGER.debug("updateBalance - begins");
+		return atmHandler.updateBalance(request);
+	}
 }

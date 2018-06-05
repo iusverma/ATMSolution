@@ -1,7 +1,11 @@
 package com.hsbc.atm;
 
+import com.hsbc.atm.model.BillsDetail;
+import com.hsbc.atm.model.DepositRequest;
 import com.hsbc.atm.model.Response;
+import com.hsbc.atm.util.MapUtils;
 import com.hsbc.atm.util.ResponseFactory;
+import com.hsbc.enums.OperationType;
 import com.hsbc.enums.Status;
 
 /**
@@ -23,9 +27,9 @@ public class ATMHandler {
 		}else {
 			status = Status.INSUFFICIENT;
 		}
-		Response response = ResponseFactory.getResponseFromStatus(status);
-		response.setBalance(atmMachine.getBalance());
-		response.setAmountRequested(amount);
+		Response response = ResponseFactory.getResponseFromStatus(status,OperationType.WITHDRAWAL);
+		response.setAmount(amount);
+		response.setBillsDetail(new BillsDetail(atmMachine.getCurrentTransactionHoldings()));
 		return response;
 	}
 
@@ -34,21 +38,36 @@ public class ATMHandler {
 	 * @return
 	 */
 	public Response getBalance() {
-		Response response = ResponseFactory.getResponseFromStatus(Status.SUCCESS);
-		response.setBalance(atmMachine.getBalance());
-		response.setAmountRequested(0);
+		Response response = ResponseFactory.getResponseFromStatus(Status.SUCCESS, OperationType.ENQUIRY);
+		response.setAmount(atmMachine.getBalance());
+		response.setBillsDetail(new BillsDetail(atmMachine.getCurrencyToNotesMap()));
 		return response;
 	}
-	
+
 	/**
-	 * Will return status of each and every note inside status
-	 * In future release, response will contain list of notes
-	 * and their remaining counts.
+	 * Deposit the amount in ATM machine
 	 */
-	public Response getATMStatus() {
-		Response response = ResponseFactory.getResponseFromStatus(Status.SUCCESS);
-		response.setBalance(atmMachine.getBalance());
-		response.setAmountRequested(0);
+	public Response updateBalance(DepositRequest request) {
+		Status status = Status.INVALID;
+		if(request==null || !isRequestValid(request)) {
+			status = atmMachine.depositAmount(request);
+			Response response = ResponseFactory.getResponseFromStatus(status, OperationType.DEPOSIT);
+			return response;
+		}
+		status = atmMachine.depositAmount(request);
+		Response response = ResponseFactory.getResponseFromStatus(status, OperationType.DEPOSIT);
+		response.setAmount(request.getAmount());
+		response.setBillsDetail(new BillsDetail(atmMachine.getCurrencyToNotesMap()));
 		return response;
+	}
+
+	/**
+	 * Validates DepositRequests
+	 * Checks whether amount requested and number of bills are in sync
+	 */
+	private boolean isRequestValid(DepositRequest request) {
+		if(request.getAmount() ==  MapUtils.sumOfMapElements(request.getNotesToDeposit()))
+			return true;
+		return false;
 	}
 }

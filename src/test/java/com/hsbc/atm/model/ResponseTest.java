@@ -12,9 +12,9 @@ public class ResponseTest {
 	private Response getResponse(Status status, String message) {
 		Response response = new Response();
 		response = new Response();
-		response.setBalance(100);
+		response.setAmount(100);
 		response.setStatus(status);
-		response.setAmountRequested(50);
+		response.setAmount(50);
 		response.setMessage(message);
 		return response;
 	}
@@ -24,17 +24,15 @@ public class ResponseTest {
 		Response response = getResponse(Status.SUCCESS,SUCCESS_MESSAGE);
 		Assert.assertEquals(response.getStatus(), Status.SUCCESS);
 		Assert.assertEquals(response.getMessage(), SUCCESS_MESSAGE);
-		Assert.assertEquals(response.getBalance(), 100);
-		Assert.assertEquals(response.getAmountRequested(), 50);
+		Assert.assertEquals(response.getAmount(), 50);
 	}
 
 	@Test
 	public void testBasicFailureResponse() {
 		Response response = getResponse(Status.FAILED,FAILURE_MESSAGE);
-		response.setAmountRequested(0);
+		response.setAmount(0);
 		Assert.assertEquals(response.getStatus(), Status.FAILED);
 		Assert.assertEquals(response.getMessage(), FAILURE_MESSAGE);
-		Assert.assertEquals(response.getBalance(), 100);
-		Assert.assertEquals(response.getAmountRequested(), 0);
+		Assert.assertEquals(response.getAmount(), 0);
 	}
 }

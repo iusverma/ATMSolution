@@ -2,14 +2,13 @@ package com.hsbc.atm;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.hsbc.atm.constants.StringConstants;
+import com.hsbc.atm.model.DepositRequest;
 import com.hsbc.enums.Status;
 
 /**
@@ -33,6 +32,7 @@ public class ATMMachine {
 	/** Stores information of number of notes to dispense */
 	private Map<Integer, Integer> currentTransactionHoldings = new HashMap<>();
 
+	private Integer [] denominations = {100,50,20,10,5};
 	/** private constructor, object cannot be created outside */
 	private ATMMachine() {
 		initializeMap();
@@ -59,7 +59,8 @@ public class ATMMachine {
 	 * Getter for balance
 	 */
 	public int getBalance() {
-		return calculateBalance();
+		this.balance = calculateBalance();
+		return this.balance;
 	}
 	/**
 	 * Getter for currencyToNotesMap
@@ -84,13 +85,21 @@ public class ATMMachine {
 	 * Reduces the amount in currencyToNotesMap
 	 */
 	public Status withdrawAmount(int amount) {
+		currentTransactionHoldings.clear();
 		Set<Integer> keySet = currencyToNotesMap.keySet();
 		Iterator<Integer> iter = keySet.iterator();
-		while(iter.hasNext()) {
-			Integer key = iter.next();
-			amount = populateAmntForDispensing(amount, key);
+		for(int i=0;i<denominations.length;i++) {
+			Integer key = denominations[i];
+			if(currencyToNotesMap.containsKey(key)) {
+				amount = populateAmntForDispensing(amount, key);
+			}
 		}
+//		while(iter.hasNext() && amount > 0) {
+//			Integer key = iter.next();
+//			amount = populateAmntForDispensing(amount, key);
+//		}
 		if(amount>0){
+			// check if other combination is present
 			LOGGER.info("!!! Amount can not dispensed due to lack of notes!!!");
 			return Status.INVALID;
         }else{
@@ -98,10 +107,8 @@ public class ATMMachine {
                 LOGGER.info(entry.getKey() + "$ bills: " + entry.getValue());
                 // Now reduce the same number from currency store
                 currencyToNotesMap.put(entry.getKey(),currencyToNotesMap.get(entry.getKey()) - entry.getValue());
-                // TODO: prepare response with notes details
             }
         }
-		currentTransactionHoldings.clear();
 		return Status.SUCCESS;
 	}
 
@@ -117,12 +124,11 @@ public class ATMMachine {
             // When number of required bills is greater than available bills
             currentTransactionHoldings.put(factor, availableBills);
             amount = amount - (factor * availableBills);
-            currencyToNotesMap.put(factor, 0);
+            //currencyToNotesMap.put(factor, 0);
         }else{
             // When ATM have sufficient bills
             currentTransactionHoldings.put(factor, bills);
             amount = amount % factor;
-            //currencyToNotesMap.put(factor, availableBills - bills);
         }
         return amount;
     }
@@ -160,4 +166,39 @@ public class ATMMachine {
 		}
 		return balance;
 	}
+
+	/**
+	 * Deposit currency in ATM
+
+	 */
+	public Status depositAmount(DepositRequest request) {
+		if(request == null)
+			return Status.INVALID;
+
+		Set<Integer> keySet = request.getNotesToDeposit().keySet();
+		Iterator<Integer> iter = keySet.iterator();
+		while(iter.hasNext()) {
+			Integer key = iter.next();
+			if(request.getNotesToDeposit().get(key)>0) {
+				currencyToNotesMap.put(key,currencyToNotesMap.get(key)+request.getNotesToDeposit().get(key));
+			}
+		}
+		return Status.SUCCESS;
+	}
+
+	/**
+	 * Getter for currentTransactionHoldings
+	 */
+	public Map<Integer, Integer> getCurrentTransactionHoldings() {
+		return currentTransactionHoldings;
+	}
+
+	/**
+	 * Setter for currentTransactionHoldings
+	 */
+	public void setCurrentTransactionHoldings(Map<Integer, Integer> currentTransactionHoldings) {
+		this.currentTransactionHoldings = currentTransactionHoldings;
+	}
+
+	//private void check
 }

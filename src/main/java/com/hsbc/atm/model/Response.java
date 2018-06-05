@@ -19,10 +19,10 @@ public class Response {
 	private String message;
 
 	/** Amount requested */
-	private int amountRequested;
+	private int amount;
 
-	/** Remaining balance in ATM */
-	private int balance;
+	/** Stores information of denomination and their current balance */
+	private BillsDetail billsDetail;
 
 	/**
 	 * Getter for status
@@ -55,28 +55,22 @@ public class Response {
 	/**
 	 * Getter for amount requested
 	 */
-	public int getAmountRequested() {
-		return amountRequested;
-	}
-
-	/**
-	 * Getter for ATM balance
-	 */
-	public int getBalance() {
-		return balance;
+	public int getAmount() {
+		return amount;
 	}
 
 	/**
 	 * Setter for amount requested
 	 */
-	public void setAmountRequested(int amountRequested) {
-		this.amountRequested = amountRequested;
+	public void setAmount(int amount) {
+		this.amount = amount;
 	}
 
-	/**
-	 * Setter for ATM balance
-	 */
-	public void setBalance(int balance) {
-		this.balance = balance;
+	public BillsDetail getBillsDetail() {
+		return billsDetail;
+	}
+
+	public void setBillsDetail(BillsDetail billsDetail) {
+		this.billsDetail = billsDetail;
 	}
 }

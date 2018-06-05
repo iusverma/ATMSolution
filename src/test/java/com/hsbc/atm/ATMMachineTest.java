@@ -1,9 +1,14 @@
 package com.hsbc.atm;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.cglib.core.DebuggingClassWriter;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import com.hsbc.atm.model.DepositRequest;
 import com.hsbc.enums.Status;
 
 /**
@@ -40,7 +45,7 @@ public class ATMMachineTest {
 	 •	$60
 	 •	$110
 	 */
-	@Test(dataProvider="withdrawalDataProvider")
+	@Test(dataProvider="withdrawalDataProvider", priority=1)
 	public void testWithdrawal(int amount, Status status) {
 		int balance = atm.getBalance();
 		Assert.assertEquals(atm.withdrawAmount(amount),status);
@@ -56,19 +61,29 @@ public class ATMMachineTest {
 			{new Integer(70),  Status.SUCCESS},
 			{new Integer(80),  Status.SUCCESS},
 			{new Integer(100),  Status.SUCCESS},
-			{new Integer(150),  Status.SUCCESS}
+			{new Integer(150),  Status.SUCCESS},
 		};
 	}
 
 	/**
 	 * $200, when there is only 3x$50 notes and 8x$20 notes available.
 	 */
-	
-	/**
-	 * Some scenarios to test
-	 * 1. Have balance withdraw successful
-	 * 2. Doesn't have balance withdraw rejected
-	 * 3. Have balance in different denominations
-	 * 4. Have balance but not sufficient notes.
-	 */
+	@Test(priority=2)
+	public void testCornerCase() {
+		int balance = atm.getBalance();
+		Assert.assertEquals(atm.withdrawAmount(balance),Status.SUCCESS);
+		Assert.assertEquals(atm.getBalance(), 0);
+
+		DepositRequest request = new DepositRequest();
+		request.setAmount(310);
+		Map<Integer,Integer> depositNotes = new HashMap<>();
+		depositNotes.put(50,3);
+		depositNotes.put(20,8);
+		request.setNotesToDeposit(depositNotes);
+		Assert.assertEquals(atm.depositAmount(request),Status.SUCCESS);
+		Assert.assertEquals(atm.getBalance(), 310);
+
+		Assert.assertEquals(atm.withdrawAmount(200),Status.SUCCESS);
+		Assert.assertEquals(atm.getBalance(), 110);
+	}
 }
