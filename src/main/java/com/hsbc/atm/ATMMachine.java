@@ -86,28 +86,24 @@ public class ATMMachine {
 	 */
 	public Status withdrawAmount(int amount) {
 		currentTransactionHoldings.clear();
-		Set<Integer> keySet = currencyToNotesMap.keySet();
-		Iterator<Integer> iter = keySet.iterator();
+		int requestedAmount = amount;
 		for(int i=0;i<denominations.length;i++) {
 			Integer key = denominations[i];
 			if(currencyToNotesMap.containsKey(key)) {
 				amount = populateAmntForDispensing(amount, key);
 			}
 		}
-//		while(iter.hasNext() && amount > 0) {
-//			Integer key = iter.next();
-//			amount = populateAmntForDispensing(amount, key);
-//		}
 		if(amount>0){
 			// check if other combination is present
-			LOGGER.info("!!! Amount can not dispensed due to lack of notes!!!");
-			return Status.INVALID;
-        }else{
-            for (Entry<Integer, Integer> entry : currentTransactionHoldings.entrySet()) {
-                LOGGER.info(entry.getKey() + "$ bills: " + entry.getValue());
-                // Now reduce the same number from currency store
-                currencyToNotesMap.put(entry.getKey(),currencyToNotesMap.get(entry.getKey()) - entry.getValue());
-            }
+			if(checkAlternatives(requestedAmount)!=Status.SUCCESS) {
+				LOGGER.info("!!! Amount can not dispensed due to lack of notes!!!");
+				return Status.INVALID;
+			}
+        }
+        for (Entry<Integer, Integer> entry : currentTransactionHoldings.entrySet()) {
+            LOGGER.info(entry.getKey() + "$ bills: " + entry.getValue());
+            // Now reduce the same number from currency store
+            currencyToNotesMap.put(entry.getKey(),currencyToNotesMap.get(entry.getKey()) - entry.getValue());
         }
 		return Status.SUCCESS;
 	}
@@ -200,5 +196,44 @@ public class ATMMachine {
 		this.currentTransactionHoldings = currentTransactionHoldings;
 	}
 
-	//private void check
+	/**
+	 * In here, I am checking the possibility of any possible combination
+	 * for completing the amount, approach is
+	 * 1. find the maximum denomination from the stack evaluated
+	 * 2. remove one note, reset the remaining amount to be fulfilled
+	 * 3. from the denomination to the end, see if any of the lower
+	 * denomination can complete the amount
+	 */
+	private Status checkAlternatives(int requestedAmount) {
+		/** Iterating for all denominations */
+		for(int i=0;i<denominations.length;i++) {
+			/** consider only if a denomination is already chosen for withdraw */
+			if(currentTransactionHoldings.containsKey(denominations[i]) &&
+					currentTransactionHoldings.get(denominations[i]) >0) {
+				/** reset the amount made up using current denomination by remove one denomination */
+				int amountAfterOneDenominationIsRemoved =
+						(currentTransactionHoldings.get(denominations[i])-1)*denominations[i];
+				/** since denomination is reduced, target amount is also reset */
+				int targetAmount = requestedAmount - amountAfterOneDenominationIsRemoved;
+
+				/** iterating on all remaining denominations */
+				for(int j=i+1;j<denominations.length;j++) {
+					/** Check is remaining denomination can make the remaining amount */
+					if(targetAmount%denominations[j] == 0) {
+						int denominationsAvailable = currencyToNotesMap.get(denominations[j]);
+						int notesRequired = targetAmount/denominations[j];
+
+						/** Check if sufficient remaining denomination are present */
+						if(denominationsAvailable>=notesRequired) {
+							currentTransactionHoldings.put(denominations[i],
+									currentTransactionHoldings.get(denominations[i])-1);
+							currentTransactionHoldings.put(denominations[j],notesRequired);
+							return Status.SUCCESS;
+						}
+					}
+				}
+			}
+		}
+		return Status.INSUFFICIENT;
+	}
 }
