@@ -1,0 +1,14 @@
+{
+    "status": "SUCCESS",
+    "message": "Amount withdrawan successfully.",
+    "amount": 200,
+    "billsDetail": {
+        "totalAmount": 200,
+        "billsDetail": {
+            "10": 0,
+            "20": 0,
+            "50": 4,
+            "100": 0
+        }
+    }
+}

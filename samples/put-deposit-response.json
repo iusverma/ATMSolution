@@ -1,0 +1,14 @@
+{
+    "status": "SUCCESS",
+    "message": "Amount deposited successfully.",
+    "amount": 200,
+    "billsDetail": {
+        "totalAmount": 2030,
+        "billsDetail": {
+            "10": 12,
+            "20": 13,
+            "50": 11,
+            "100": 11
+        }
+    }
+}
